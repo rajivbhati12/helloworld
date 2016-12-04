@@ -1,8 +1,13 @@
 package helloworld
 
+import java.io.FileNotFoundException
 import com.fasterxml.jackson.jr.ob._
+import collection.mutable.HashMap
+
 
 object Boot {
+
+
   // In scala, an object can be thought of as a singleton object
   // or a class with static methods. By convention, the object
   // containing the main method is often called "Boot".
@@ -13,40 +18,75 @@ object Boot {
   // See the DatabaseClient class
   var databaseClient = new DatabaseClient(databasePath)
 
+  // Ordinal HashMap to keep static data out from main method
+  val ordinal:HashMap[Int, String] = HashMap(
+    1 -> "first",
+    2 -> "second",
+    3 -> "third",
+    4 -> "fourth",
+    5 -> "fifth",
+    6 -> "sixth",
+    7 -> "seventh",
+    8 -> "eighth"
+  )
+
+  //  var source = Source.fromFile(path)
+
+  //  Entry point for Application
+
   def main(args: Array[String]) = {
+    //  Companion instance of boot class
+    var boot:Boot = new Boot
+    //  Parse command line arguments
+    val id = args(0).toInt
+    //  Design message based on id
+    val myMessage = boot.designMessage(id)
+    //  Message printing
+    println(myMessage)
+  }
+}
 
-    // Just as in Java, the main method is the entry point of
-    // the application. The args parameter is an array of strings
-    // containing the command line arguments passed to the app.
+class Boot{
+  import Boot._
 
-    // Parse command line arguments
-    var id = args( 0 ).toInt
+  //  Design message based on planet id
 
-    // Find the database record and transform it into an instance of our domain class
-    var recordJSON = databaseClient.find(id)
-    var parsedJSON = JSON.std.mapFrom(recordJSON)
-    var world = new World(
+  def designMessage(id: Int):String = {
+    //  Find the database record
+    val recordJSON = databaseClient.find(id)
+    //  Transform record into an instance of our domain class
+    val world = parseJson(recordJSON)
+
+    //  Format Message
+    getMessageFromTemplate("default",world.name, ordinal.get(world.id).get)
+  }
+  //  Transform record to domain world
+
+  def parseJson(record: String):World = {
+    //  Record as Json
+    val parsedJSON = JSON.std.mapFrom(record)
+    //  Converting Json to domain
+    new World(
       parsedJSON.get("key").asInstanceOf[Int],
       parsedJSON.get("value").asInstanceOf[String]
     )
+  }
 
-    // Build the message to print
-    var idAsOrdinal = Map(
-      1 -> "first",
-      2 -> "second",
-      3 -> "third",
-      4 -> "fourth",
-      5 -> "fifth",
-      6 -> "sixth",
-      7 -> "seventh",
-      8 -> "eighth"
-    ).get(world.id)
-      .get // Get a String out of the Option. If you're interested, see http://danielwestheide.com/blog/2012/12/19/the-neophytes-guide-to-scala-part-5-the-option-type.html
-    var message = s"Hello, ${world.name}, $idAsOrdinal planet from the Sun!" // String interpolation in scala.
+  // Considering: We might like to send new messages to a given world
+  // it will be easy to write logic in future for message parsing
 
-    println(message)
+  def getMessageFromTemplate(messageKey: String, name: String, position: String): String = {
+
+    //  Map to save/return formatted message
+    HashMap(
+
+      "default" -> s"Hello, $name, $position planet from the Sun!"
+
+    ).getOrElse(messageKey, "")
+
   }
 }
+
 
 // Unlike Java, scala files can contain multiple classes.
 class World(_id: Int, _name: String) {
@@ -54,6 +94,7 @@ class World(_id: Int, _name: String) {
   // it is very contrived, but as this application grows, it will
   // become a very important concept. Note that there is a much
   // terser syntax available in scala; here it is expanded for clarity.
+
   def id: Int = _id
   def name: String = _name
 }
@@ -64,6 +105,8 @@ class DatabaseClient(databasePath: String) {
   import scala.io.Source // Not the preferred io library in scala btw :)
 
   // find takes an Int and returns a JSON string
+  @throws(classOf[FileNotFoundException])
+  @throws(classOf[FileNotFoundException])
   def find(id: Int): String = {
     // Example: databaseClient.find(1)
     // Returns: { key: 1, value: Mercury }
@@ -73,6 +116,7 @@ class DatabaseClient(databasePath: String) {
     var source = Source.fromFile(path)
     // Read a string from the file.
     var string = try source.getLines.next finally source.close()
+
 
     s"""{"key": $id, "value": "$string"}"""
   }
