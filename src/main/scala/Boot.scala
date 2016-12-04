@@ -45,7 +45,7 @@ object Boot {
     println(myMessage)
   }
 }
-//Companion Boot class to make it more accessable/testable
+//Companion Boot class to make it more accessible/testable
 class Boot{
   import Boot._
 
