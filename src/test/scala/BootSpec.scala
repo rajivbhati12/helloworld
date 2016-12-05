@@ -25,7 +25,7 @@ class BootSpec extends FlatSpec with Matchers with MockitoSugar{
   Boot.databaseClient = mockDatabaseClient
 
   behavior of "\nBoot.designMessage"
-  it should "return message saying - Hello, mocked up Planet, second planet from the Sun!" in {
+  it should "return Hello world - message for existing planet" in {
     boot.designMessage(2) shouldBe "Hello, mocked up Planet, second planet from the Sun!"
   }
   it should "throw exception for non-existing planet" in {
@@ -36,7 +36,7 @@ class BootSpec extends FlatSpec with Matchers with MockitoSugar{
   }
 
   behavior of "\nBoot.parseJson"
-  it should "return domain - World as per provide key:value for record= {\"key\": 2, \"value\": \"Venus\"}" in {
+  it should "return World[domain] for existing planet" in {
     val returnWorld = boot.parseJson(s"""{"key": 2, "value": "Venus"}""")
     returnWorld.name shouldBe "Venus"
     returnWorld.id shouldBe  2
@@ -52,28 +52,18 @@ class BootSpec extends FlatSpec with Matchers with MockitoSugar{
       (  s"""{"key": , "value": "Earth" }"""  ,"com.fasterxml.jackson.core.JsonParseException"    )
     )
   forAll (parserExceptionTestData) { (input: String, expectedExceptionType: String) => {
-    it should s"throw exception: $expectedExceptionType for Json record = $input" in {
+    it should s"throw exception for invalid Json string: $input" in {
       var thrown = intercept[Exception] {
         boot.parseJson(input)
       }
       thrown.toString.split(":")(0) shouldBe expectedExceptionType
     }
   }}
-//  Test data for different possible inputs
-  val messageTemplateTestData =
-    Table(
-      ("messageKey" ,"planetName"   ,"position"   ,"expectedMessage"                            ),
-      ("default"    ,"Earth"        ,"third"      ,"Hello, Earth, third planet from the Sun!"   ),
-      (""           ,"Earth"        ,"third"      ,""                                           ),
-      (null         ,null           ,null         ,""                                           )
-    )
+
   behavior of "\nBoot.getMessageFromTemplate"
-  forAll (messageTemplateTestData) { (messageKey: String, planetName: String, position: String, expectedMessage: String) => {
-    it should s"produce message -'$expectedMessage' => messageKey= $messageKey, " +
-      s"name= $planetName & position = third \n" in {
-      boot.getMessageFromTemplate(messageKey, planetName, position) shouldBe expectedMessage
-    }
-  }}
+  it should s"design hello world - message using planet name and position" in {
+    boot.getMessageFromTemplate("Earth", "third") shouldBe "Hello, Earth, third planet from the Sun!"
+  }
 
   //  Unit Test for Class:- World
   behavior of "\nWorld.id"

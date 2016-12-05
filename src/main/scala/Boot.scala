@@ -58,7 +58,7 @@ class Boot{
     val world = parseJson(recordJSON)
 
     //  Format Message
-    getMessageFromTemplate("default",world.name, ordinal.get(world.id).get)
+    getMessageFromTemplate(world.name, ordinal.get(world.id).get)
   }
   //  Transform record to domain world
 
@@ -75,15 +75,8 @@ class Boot{
   // Considering: We might like to send new messages to a given world
   // it will be easy to write logic in future for message parsing
 
-  def getMessageFromTemplate(messageKey: String, name: String, position: String): String = {
-
-    //  Map to save/return formatted message
-    HashMap(
-
-      "default" -> s"Hello, $name, $position planet from the Sun!"
-
-    ).getOrElse(messageKey, "")
-
+  def getMessageFromTemplate(name: String, position: String): String = {
+    s"Hello, $name, $position planet from the Sun!"
   }
 }
 

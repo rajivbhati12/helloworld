@@ -12,7 +12,7 @@ class BootEndToEndSpec extends FlatSpec with Matchers {
 
   behavior of "\nBoot.main"
   //  Basic positive test
-  it should "print message \"Hello, Earth, third planet from the Sun!\" for argument = 3" in {
+  it should "print Hello world - message for valid planet number" in {
     val stream = new java.io.ByteArrayOutputStream()
     scala.Console.withOut(stream) {
       Boot.main(Array("3"))
@@ -22,13 +22,13 @@ class BootEndToEndSpec extends FlatSpec with Matchers {
   val mainExceptionTestData =
     Table(
       ("printInput"     ,"input"                              ,"expectedExceptionType"                            ),
-      ("Array(\"\")"    ,Array("")                            ,"java.lang.NumberFormatException"                  ),
-      ("Array[String]()",Array[String]()                      ,"java.lang.ArrayIndexOutOfBoundsException"         ),
-      ("Array(\"-1\")"  ,Array("-1")                          ,"java.io.FileNotFoundException"                    ),
+      ("<blank>"        ,Array("")                            ,"java.lang.NumberFormatException"                  ),
+      ("<empty>"        ,Array[String]()                      ,"java.lang.ArrayIndexOutOfBoundsException"         ),
+      ("no-exist"       ,Array("-1")                          ,"java.io.FileNotFoundException"                    ),
       ("null"           ,null                                 ,"java.lang.NullPointerException"                   )
     )
   forAll (mainExceptionTestData) {(printInput,testArg,expectedExceptionType) => {
-    it should s"produce $expectedExceptionType for arg = $printInput" in {
+    it should s"produce exception for invalid planet number: $printInput" in {
       var thrown = intercept[Exception] {
         Boot.main(testArg)
       }
